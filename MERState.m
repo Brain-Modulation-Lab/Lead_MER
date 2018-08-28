@@ -292,20 +292,20 @@ classdef MERState < handle
             coords = bsxfun(@plus, (0:obj.Config.MERPnts - 1)' * stepsize, startpoint);
         end
         function addMarkerAtDepth(obj, id, side, label, type, sess_notes, depth)
-            bMarkers = strcmpi({obj.Markers.side}, side)...
-                & strcmpi({obj.Markers.tract_label}, label)...
-                & ([obj.Markers.depth] == depth);
-            if any(bMarkers)
-                warning('Location along %s - %s at depth %f is already marked as type %s.',...
-                    side, label, depth, obj.Markers(bMarkers).type);
-            else
+%             bMarkers = strcmpi({obj.Markers.side}, side)...
+%                 & strcmpi({obj.Markers.tract_label}, label)...
+%                 & ([obj.Markers.depth] == depth);
+%             if any(bMarkers)
+%                 warning('Location along %s - %s at depth %f is already marked as type %s.',...
+%                     side, label, depth, obj.Markers(bMarkers).type);
+%             else
                 obj.Markers(end + 1).id = id;
                 obj.Markers(end).side = side;
                 obj.Markers(end).tract_label = label;
                 obj.Markers(end).depth = depth;
                 obj.Markers(end).type = type;
                 obj.Markers(end).session = sess_notes;
-            end
+%             end
         end
         function addMarkersAtTrajs(obj, tstruct, type, sess_notes)
             for traj_ix = 1:length(tstruct)
