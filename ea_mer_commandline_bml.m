@@ -1,16 +1,20 @@
+% add lead and spm12 to the path
+addpath(genpath('E:\MATLAB\spm12'));
+addpath(genpath('E:\MATLAB\lead_v2.1.5')); % v2.1.5
+
 % pull this repository from github: https://github.com/Brain-Modulation-Lab/Lead_MER
 
 % then remove lead's version of this directory and add the one from github
-rmpath('/Users/brainmodulationlab/Documents/MATLAB/lead_v2.1.6/tools/MER');
-addpath('/Users/brainmodulationlab/Documents/MATLAB/MER');
+rmpath('E:\MATLAB\lead_v2.1.5/tools/MER');
+addpath('E:\MATLAB\Lead_MER');
 
-% navigate to the DBS directory on the server
+% manually navigate to the DBS directory on the server
 
 subjectdir = [fullfile(pwd) filesep]; % subject directory
-subject = 'DBS3001';
+subject = 'DBS3015'; 
 
 %% load marker table
-markers_input = readtable([subject filesep 'Anatomy' filesep 'leaddbs' filesep 'annot' filesep 'markers']);
+markers_input = readtable([subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'annot' filesep 'markers.xlsx']);
 
 %% add LFP recordings 3 mm above each MER recording
 idx_MER = find(strcmp('MER recording', markers_input.Type));
@@ -22,17 +26,17 @@ for i=1:length(idx_MER)
 end
 
 %% load electrode type
-load([subject filesep 'Anatomy' filesep 'leaddbs' filesep 'ea_reconstruction.mat']);
+load([subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'ea_reconstruction.mat']);
 elmodel = reco.props(1).elmodel;
 
 
 %% Setup the options struct.
 options.root = subjectdir;
-options.patientname = [subject filesep 'Anatomy' filesep 'leaddbs'];
+options.patientname = [subject filesep 'Anatomy' filesep 'leaddbs_' subject];
 options.uipatdirs = {fullfile(options.root, options.patientname)};
 options.native = true;
 options.loadrecoforviz = 1;
-options.sides = [1 2];
+options.sides = [1 2]; % 1 is right, 2 is left
 options.prefs = ea_prefs;
 options.elmodel = elmodel;
 options = ea_resolve_elspec(options);
@@ -74,12 +78,12 @@ temp1.save('y');  % Pass 'y' to overwrite file if it exists. Omit to be prompted
 %% export markers in MNI and native space, join with input table and write out new table.
 markers = temp1.exportMarkers();
 markers = join(markers_input, markers, 'Keys', 'id', 'KeepOneCopy', markers.Properties.VariableNames);
-writetable(markers, [subject filesep 'Anatomy' filesep 'leaddbs' filesep 'annot' filesep 'markers'], 'delimiter', '\t');
+writetable(markers, [subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'annot' filesep subject '_MER_coords'], 'delimiter', '\t');
 
 %% Working with data that were already saved (commandline or GUI)
 % temp2 = MERState();
 % temp2.Config.root = [fullfile(pwd) filesep];
-% temp2.Config.patientname = ['DBS3001' filesep 'Anatomy' filesep 'leaddbs'];
+% temp2.Config.patientname = ['DBS3001' filesep 'Anatomy' filesep 'leaddbs_' subject];
 % temp2.load();
 % markers = temp2.exportMarkers();
 
@@ -91,7 +95,7 @@ marker_types = unique(markers.Type);
 colors = {'r', 'g', 'b', 'c', 'y'};
 
 % load atlas
-load('/Users/brainmodulationlab/Documents/MATLAB/lead_v2.1.6/templates/space/MNI_ICBM_2009b_NLIN_ASYM/atlases/DISTAL Minimal (Ewert 2017)/atlas_index.mat');
+load('E:\MATLAB\lead_v2.1.5/templates/space/MNI_ICBM_2009b_NLIN_ASYM/atlases/DISTAL Minimal (Ewert 2017)/atlas_index.mat');
 
 h = figure; hold on;
 % plot STNs
@@ -111,5 +115,5 @@ end
 legend(['rSTN'; 'lSTN'; marker_types])
 
 % save figures
-saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs', filesep, 'figures', filesep subject, '_MERlocs.fig'], 'fig');
-saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs', filesep, 'figures', filesep subject, '_MERlocs.pdf'], 'pdf');
+saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs_', subject filesep, 'figures', filesep subject, '_MERlocs.fig'], 'fig');
+saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs_', subject filesep, 'figures', filesep subject, '_MERlocs.pdf'], 'pdf');
