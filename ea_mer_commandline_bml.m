@@ -1,20 +1,20 @@
 % add lead and spm12 to the path
 addpath(genpath('E:\MATLAB\spm12'));
-addpath(genpath('E:\MATLAB\lead_v2.1.5')); % v2.1.5
+addpath(genpath('E:\MATLAB\lead_v2.3')); % v2.3
 
 % pull this repository from github: https://github.com/Brain-Modulation-Lab/Lead_MER
 
 % then remove lead's version of this directory and add the one from github
-rmpath('E:\MATLAB\lead_v2.1.5/tools/MER');
+rmpath('E:\MATLAB\lead_v2.3/tools/MER');
 addpath('E:\MATLAB\Lead_MER');
 
 % manually navigate to the DBS directory on the server
 
 subjectdir = [fullfile(pwd) filesep]; % subject directory
-subject = 'DBS3015'; 
+subject = 'sub-DM1004'; 
 
 %% load marker table
-markers_input = readtable([subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'annot' filesep 'markers.xlsx']);
+markers_input = readtable([subject filesep 'leaddbs' filesep 'annot' filesep 'markers.xlsx']);
 
 %% add LFP recordings 3 mm above each MER recording
 idx_MER = find(strcmp('MER recording', markers_input.Type));
@@ -26,13 +26,13 @@ for i=1:length(idx_MER)
 end
 
 %% load electrode type
-load([subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'ea_reconstruction.mat']);
+load([subject filesep 'leaddbs' filesep 'ea_reconstruction.mat']);
 elmodel = reco.props(1).elmodel;
 
 
 %% Setup the options struct.
 options.root = subjectdir;
-options.patientname = [subject filesep 'Anatomy' filesep 'leaddbs_' subject];
+options.patientname = [subject filesep 'leaddbs'];
 options.uipatdirs = {fullfile(options.root, options.patientname)};
 options.native = true;
 options.loadrecoforviz = 1;
@@ -78,7 +78,7 @@ temp1.save('y');  % Pass 'y' to overwrite file if it exists. Omit to be prompted
 %% export markers in MNI and native space, join with input table and write out new table.
 markers = temp1.exportMarkers();
 markers = join(markers_input, markers, 'Keys', 'id', 'KeepOneCopy', markers.Properties.VariableNames);
-writetable(markers, [subject filesep 'Anatomy' filesep 'leaddbs_' subject filesep 'annot' filesep subject '_MER_coords'], 'delimiter', '\t');
+writetable(markers, [subject filesep 'leaddbs' filesep 'annot' filesep subject '_MER_coords'], 'delimiter', '\t');
 
 %% Working with data that were already saved (commandline or GUI)
 % temp2 = MERState();
@@ -115,5 +115,5 @@ end
 legend(['rSTN'; 'lSTN'; marker_types])
 
 % save figures
-saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs_', subject filesep, 'figures', filesep subject, '_MERlocs.fig'], 'fig');
-saveas(h, [subject filesep 'Anatomy' filesep 'leaddbs_', subject filesep, 'figures', filesep subject, '_MERlocs.pdf'], 'pdf');
+saveas(h, [subject filesep 'leaddbs' filesep 'figures', filesep subject, '_MERlocs.fig'], 'fig');
+saveas(h, [subject filesep 'leaddbs' filesep 'figures', filesep subject, '_MERlocs.pdf'], 'pdf');
