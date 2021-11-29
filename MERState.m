@@ -192,6 +192,15 @@ classdef MERState < handle
                 end
             end
             obj.Config.native = opt_native_backup;
+            %Adding the following lines to adjust for unilateral DBS
+            %implantation:
+            if isempty(obj.DBSImplants(1).coords)
+                obj.DBSImplants(1) = [];
+                obj.Config.MERTrajectory(1:5) = [];
+            elseif isempty(obj.DBSImplants(2).coords)
+                obj.DBSImplants(2) = [];
+                obj.Config.MERTrajectory(6:10) = [];
+            end
         end
         function updateDBSImplantTrack(obj, side, label)
             bSide = strcmpi({obj.DBSImplants.side}, side);

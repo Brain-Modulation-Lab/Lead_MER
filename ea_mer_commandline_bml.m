@@ -1,17 +1,17 @@
 % add lead and spm12 to the path
-addpath(genpath('E:\MATLAB\spm12'));
-addpath(genpath('E:\MATLAB\lead_v2.3')); % v2.3
+addpath(genpath('C:\MATLAB_external_libs\spm12'));
+addpath(genpath('C:\MATLAB_external_libs\lead_v2.5.3')); % v2.3
 
 % pull this repository from github: https://github.com/Brain-Modulation-Lab/Lead_MER
 
 % then remove lead's version of this directory and add the one from github
-rmpath('E:\MATLAB\lead_v2.3/tools/MER');
-addpath('E:\MATLAB\Lead_MER');
+rmpath('C:\MATLAB_external_libs\lead_v2.5.3/tools/MER');
+addpath('C:\MATLAB_external_libs\Lead_MER');
 
 % manually navigate to the DBS directory on the server
 
 subjectdir = [fullfile(pwd) filesep]; % subject directory
-subject = 'sub-DM1004'; 
+subject = 'sub-DM1014'; 
 
 %% load marker table
 markers_input = readtable([subject filesep 'leaddbs' filesep 'annot' filesep 'markers.xlsx']);
@@ -27,8 +27,11 @@ end
 
 %% load electrode type
 load([subject filesep 'leaddbs' filesep 'ea_reconstruction.mat']);
-elmodel = reco.props(1).elmodel;
-
+if isempty(reco.props(1).elmodel)
+    elmodel = reco.props(2).elmodel;
+else
+    elmodel = reco.props(1).elmodel;
+end
 
 %% Setup the options struct.
 options.root = subjectdir;
@@ -95,12 +98,23 @@ marker_types = unique(markers.Type);
 colors = {'r', 'g', 'b', 'c', 'y'};
 
 % load atlas
-load('E:\MATLAB\lead_v2.1.5/templates/space/MNI_ICBM_2009b_NLIN_ASYM/atlases/DISTAL Minimal (Ewert 2017)/atlas_index.mat');
+load('C:\MATLAB_external_libs\lead_v2.3/templates/space/MNI_ICBM_2009b_NLIN_ASYM/atlases/DISTAL Minimal (Ewert 2017)/atlas_index.mat');
+%Set target here:
+target = 'STN';
+
+switch (target) 
+    case 'STN'
+        target_id = 1;
+    case 'GPi'
+        target_id = 5;
+    case 'GPe'
+        target_id = 15;
+end
 
 h = figure; hold on;
 % plot STNs
 for side=1:2
-    Hp = patch('vertices',atlases.fv{1,side}.vertices,'faces',atlases.fv{1,side}.faces,...
+    Hp = patch('vertices',atlases.fv{target_id,side}.vertices,'faces',atlases.fv{target_id,side}.faces,...
         'facecolor',[.750 .50 .50],'edgecolor','none',...
         'facelighting', 'gouraud', 'specularstrength', .50);
     camlight('headlight','infinite');
@@ -112,7 +126,7 @@ for m=1:length(marker_types)
     coords_mni = cell2mat(table2cell(markers(strcmp(marker_types(m), markers.Type),11:13)));
     plot3(coords_mni(:,1), coords_mni(:,2), coords_mni(:,3), 'color', colors{m}, 'linestyle', 'none', 'marker', '.', 'markersize', 25)
 end
-legend(['rSTN'; 'lSTN'; marker_types])
+legend([strcat('r',target); strcat('l',target); marker_types])
 
 % save figures
 saveas(h, [subject filesep 'leaddbs' filesep 'figures', filesep subject, '_MERlocs.fig'], 'fig');
